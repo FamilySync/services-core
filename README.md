@@ -1,1 +1,1 @@
-# services-core
+# core-services
