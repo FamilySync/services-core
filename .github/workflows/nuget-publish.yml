@@ -3,7 +3,7 @@ name: .NET Core Build and Publish NuGet
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   build:
