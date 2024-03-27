@@ -1,4 +1,4 @@
-name: .NET Core Build and Publish NuGet
+name: Build and Publish NuGet
 
 on:
   push:
@@ -6,8 +6,8 @@ on:
       - main
 
 jobs:
-  build:
-    runs-on: windows-latest
+  build-and-publish:
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
@@ -15,7 +15,7 @@ jobs:
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '8.0.x'
+        dotnet-version: '3.1.x' # Replace with your desired .NET version
 
     - name: Restore dependencies
       run: dotnet restore
@@ -27,9 +27,10 @@ jobs:
       run: dotnet test --no-restore --verbosity normal
 
     - name: Pack
-      run: dotnet pack --configuration Release --no-build --output nupkgs
+      run: dotnet pack --configuration Release --no-build --output ./nupkgs
 
-    - name: Publish NuGet
-      run: dotnet nuget push ./nupkgs/*.nupkg --source "GitHub" --skip-duplicate
+    - name: Publish NuGet Packages
+      run: |
+        find ./nupkgs -name "*.nupkg" -exec dotnet nuget push {} --source "github" --skip-duplicate --api-key ${{ secrets.GITHUB_TOKEN }} \;
       env:
-        NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        DOTNET_ROOT: ${{ runner.tool_cache }}/dotnet
