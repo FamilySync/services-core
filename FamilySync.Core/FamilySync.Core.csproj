@@ -7,10 +7,18 @@
         <Title>FamilySync.Core</Title>
         <Authors>Nichlas Hoberg</Authors>
         <Description>This package adds support for core logic.</Description>
+        <RepositoryUrl>https://github.com/FamilySync/services-core</RepositoryUrl>
         <PackageProjectUrl>https://github.com/FamilySync/core-services</PackageProjectUrl>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <RepositoryType>git</RepositoryType>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Version>1.0.5</Version>
     </PropertyGroup>
+
+    <PropertyGroup>
+
+    </PropertyGroup>
+
 
     <ItemGroup>
         <PackageReference Include="Mapster" Version="7.4.0"/>
