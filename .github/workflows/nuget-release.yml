@@ -35,7 +35,7 @@ jobs:
       with:
         dotnet-version: 8.x.x
     - name: Build and Pack NuGet package
-      run: dotnet nuget push "./nupkgs/*.nupkg" --api-key ${{ secrets.ORG_FULL_ACCESS_TOKEN }} --source "github"
+      run: dotnet nuget push "./nupkgs/*.nupkg" --api-key ${{ secrets.ORG_FULL_ACCESS_TOKEN }} --source "https://nuget.pkg.github.com/FamilySync/index.json"
     - name: Upload NuGet package to GitHub
       uses: actions/upload-artifact@v2
       with:
