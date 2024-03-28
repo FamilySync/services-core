@@ -20,21 +20,7 @@ public static class ServiceCollectionExtensions
                     .EnableRetryOnFailure();
             });
         });
-        
-        return services;
-    }
-    public static IServiceCollection AddPostgreSqlContext<TContext>(this IServiceCollection services, string dbName,
-        IConfiguration configuration) where TContext : DbContext
-    {
-        var connectionString = configuration.GetConnectionString("PostgreSQL");
-        services.AddDbContext<DbContext, TContext>(options =>
-        {
-            options.UseNpgsql(connectionString, actions =>
-            {
-                actions.MigrationsAssembly(typeof(TContext).Assembly.FullName);
-            });
-        });
-        
+
         return services;
     }
 }

@@ -13,11 +13,11 @@ public static class ServiceCollectionExtension
 {
     public static IServiceCollection InitializeService(this IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<AuthenticationSettings>(configuration.GetRequiredSection("Settings:Authentication"));
         services.Configure<ServiceSettings>(configuration.GetRequiredSection("Settings:Service"));
         services.Configure<IncludeSettings>(configuration.GetSection("Settings:Include"));
 
-        var settings = configuration.GetRequiredSection("Settings")
+        var settings = configuration
+            .GetRequiredSection("Settings")
             .Get<ConfigurationSettings>()!;
 
         if (settings.Include.Versioning)
@@ -28,7 +28,7 @@ public static class ServiceCollectionExtension
                 options.ReportApiVersions = true;
                 options.DefaultApiVersion = new(1, 0);
             });
-
+        
             services.AddVersionedApiExplorer(options =>
             {
                 options.SubstituteApiVersionInUrl = true;
@@ -50,14 +50,14 @@ public static class ServiceCollectionExtension
         if (settings.Include.Swagger)
         {
             services.AddTransient<IConfigureOptions<SwaggerGenOptions>, SwaggerConfigurationSettings>();
-
+        
             services.AddSwaggerGen(options =>
             {
                 options.UseAllOfToExtendReferenceSchemas();
                 options.CustomOperationIds(o => $"{o.ActionDescriptor.RouteValues["action"]}");
-
+        
                 const string securityDefinition = "Bearer";
-
+        
                 var scheme = new OpenApiSecurityScheme
                 {
                     Description = $"Authorization header for JWT using {securityDefinition} scheme.",
@@ -76,7 +76,7 @@ public static class ServiceCollectionExtension
                     {scheme, new List<string>()}
                 });
             });
-
+        
             services.AddEndpointsApiExplorer();
         }
 

@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Runtime.Loader;
 using FamilySync.Core.Extensions;
 using FamilySync.Core.Helpers;
 using Microsoft.AspNetCore.Builder;
@@ -37,35 +38,39 @@ public class Startup
             throw new Exception("GetEntryAssembly returned null");
         }
         
-        /*
-         * 1. Get the current application domain.
-         * 2. Get all loaded assemblies in the domain.
-         * 3. Filter out dynamic assemblies.
-         * 4. Get the exported types from all assemblies.
-         * 5. Filter out abstract types.
-         * 6. Filter for types that are subclasses of ServiceConfiguration.
-         * 7. Filter types based on prefixes.
-         * 8. Create instances of the selected types.
-         * 9. Filter out any null instances.
-         * 10. Convert the result to a List<ServiceConfiguration>.
-         */
+        foreach (var asm in entryAssembly.GetReferencedAssemblies())
+        {
+            try
+            {
+                AssemblyLoadContext.Default.LoadFromAssemblyName(asm);
+            }
+            catch
+            {
+                continue;
+            }
+        }
+
         var plugins = AppDomain.CurrentDomain
             .GetAssemblies()
-            .Where(assembly => !assembly.IsDynamic)
-            .SelectMany(assembly => assembly.GetExportedTypes())
-            .Where(type => !type.IsAbstract && type.IsSubclassOf(typeof(ServiceConfiguration)))
-            .Where(type => allowedPluginAssemblyPrefix.Any(prefix => type.FullName?.StartsWith(prefix) == true))
-            .Select(type => (ServiceConfiguration?)Activator.CreateInstance(type))
-            .Where(config => config != null)
+            .Where(o => !o.IsDynamic)
+            .Where(o => o.FullName is string fn && allowedPluginAssemblyPrefix.Any(k => fn.StartsWith(k)))
+            .SelectMany(o => o.GetExportedTypes())
+            .Where(o => !o.IsAbstract && o.IsSubclassOf(typeof(ServiceConfiguration)))
+            .Distinct()
+            .Select(o => (ServiceConfiguration)Activator.CreateInstance(o)!)
+            .Where(o => o is not null)
             .ToList();
-        
-        // Clear and update the list of plugin configurations.
-        PluginConfigurations.Clear();
-        PluginConfigurations.AddRange(plugins!);
+
+        if (PluginConfigurations.Any())
+        {
+            PluginConfigurations.Clear();
+        }
+
+        PluginConfigurations.AddRange(plugins);
     }
     public virtual void Configure(IApplicationBuilder app)
     {
-        app.InitializeApplication();
+        app.UseServiceCore();
         
         Configure(app, PluginConfigurations);
     }
