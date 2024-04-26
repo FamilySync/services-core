@@ -23,4 +23,22 @@ public static class ServiceCollectionExtensions
 
         return services;
     }
+
+    public static IServiceCollection AddPooledMySqlContext<TContext>(this IServiceCollection services, string databaseName,
+        IConfiguration configuration) where TContext : DbContext
+    {
+        var connectionString = configuration.GetConnectionString("MySQL");
+        var version = new MySqlServerVersion("8.0.26");
+        
+        services.AddPooledDbContextFactory<TContext>(options =>
+        {
+            options.UseMySql($"{connectionString};Database={databaseName}", version, options =>
+            {
+                options
+                    .EnableRetryOnFailure();
+            });
+        });
+
+        return services;
+    }
 }
