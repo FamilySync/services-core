@@ -1,4 +1,6 @@
-﻿using FamilySync.Core.Example.Services;
+﻿using FamilySync.Core.Example.Models.DTO;
+using FamilySync.Core.Example.Models.Entity;
+using FamilySync.Core.Example.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FamilySync.Core.Example.Controllers;
@@ -7,6 +9,13 @@ namespace FamilySync.Core.Example.Controllers;
 [ApiController]
 public class ExampleController : ControllerBase
 {
+    private readonly IExampleService _service;
+
+    public ExampleController(IExampleService service)
+    {
+        _service = service;
+    }
+    
     [HttpGet("example")]
     [ProducesResponseType(200)]
     public ActionResult<string> Example([FromQuery] string name)
@@ -19,5 +28,23 @@ public class ExampleController : ControllerBase
     public async Task<ActionResult<string>> ExampleService([FromServices] IExampleService exampleService)
     {
         return Ok(await exampleService.GetExampleData());
+    }
+
+    [HttpPost("example")]
+    [ProducesResponseType(typeof(ExampleEntity), StatusCodes.Status200OK)]
+    public ActionResult<ExampleEntity> ExampleMapper(ExampleDTO dto)
+    {
+        var result = _service.ExampleMapping(dto).Result;
+    
+        return Ok(result);
+    }
+    
+    [HttpPost("customExample")]
+    [ProducesResponseType(typeof(ExampleEntity), StatusCodes.Status200OK)]
+    public ActionResult<ExampleEntity> CustomExampleMapper(ExampleDTO dto)
+    {
+        var result = _service.CustomExampleMapping(dto).Result;
+    
+        return Ok(result);
     }
 }

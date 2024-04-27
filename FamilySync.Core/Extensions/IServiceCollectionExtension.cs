@@ -1,5 +1,8 @@
 ﻿using FamilySync.Core.Helpers.Settings;
 using FamilySync.Core.Settings;
+using FastExpressionCompiler;
+using Mapster;
+using MapsterMapper;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,7 +12,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace FamilySync.Core.Extensions;
 
-public static class ServiceCollectionExtension
+public static class IServiceCollectionExtension
 {
     public static IServiceCollection InitializeService(this IServiceCollection services, IConfiguration configuration)
     {
@@ -80,6 +83,13 @@ public static class ServiceCollectionExtension
             services.AddEndpointsApiExplorer();
         }
 
+        if (settings.Include.Mapper)
+        {
+            TypeAdapterConfig.GlobalSettings.Compiler = exp => exp.CompileFast();
+            TypeAdapterConfig.GlobalSettings.RequireExplicitMapping = false;
+
+            services.AddSingleton<IMapper, ServiceMapper>();
+        }
 
         return services;
     }

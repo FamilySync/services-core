@@ -2,6 +2,7 @@
 using System.Runtime.Loader;
 using FamilySync.Core.Extensions;
 using FamilySync.Core.Helpers;
+using Mapster;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -68,13 +69,22 @@ public class Startup
 
         PluginConfigurations.AddRange(plugins);
     }
-    public virtual void Configure(IApplicationBuilder app)
+    public virtual void ConfigureApp(IApplicationBuilder app)
     {
         app.UseServiceCore();
         
-        Configure(app, PluginConfigurations);
+        ApplyConfigurations(app, PluginConfigurations);
     }
-    protected virtual void Configure(IApplicationBuilder app, List<ServiceConfiguration> configurations)
+
+    public virtual void InitializeServices(IServiceCollection services)
+    {
+        services.InitializeService(Configuration!);
+        
+        ConfigureServices(services, PluginConfigurations);
+        ConfigureMapper(services, PluginConfigurations);
+    }
+
+    protected virtual void ApplyConfigurations(IApplicationBuilder app, List<ServiceConfiguration> configurations)
     {
         foreach (var configuration in configurations)
         {
@@ -82,12 +92,7 @@ public class Startup
             configuration.Configure(app);
         }
     }
-    public virtual void ConfigureServices(IServiceCollection services)
-    {
-        services.InitializeService(Configuration!);
-        
-        ConfigureServices(services, PluginConfigurations);
-    }
+
     protected virtual void ConfigureServices(IServiceCollection services, List<ServiceConfiguration> configurations)
     {
         foreach (var configuration in configurations)
@@ -95,5 +100,17 @@ public class Startup
             configuration.Configuration = Configuration!;
             configuration.ConfigureServices(services);
         }
+    }
+
+    protected virtual void ConfigureMapper(IServiceCollection services, List<ServiceConfiguration> configurations)
+    {
+        var mapperConfig = new TypeAdapterConfig();
+
+        foreach (var configuration in configurations)
+        {
+            configuration.ConfigureMapper(mapperConfig);
+        }
+
+        services.AddSingleton(mapperConfig);
     }
 }

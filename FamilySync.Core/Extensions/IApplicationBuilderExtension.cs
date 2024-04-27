@@ -7,7 +7,7 @@ using Microsoft.OpenApi.Models;
 
 namespace FamilySync.Core.Extensions;
 
-public static class ApplicationBuilderExtension
+public static class IApplicationBuilderExtension
 {
     public static IApplicationBuilder UseServiceCore(this IApplicationBuilder applicationBuilder)
     {
